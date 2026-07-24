@@ -1,0 +1,6 @@
+runs/
+dataset/
+*.pt
+wandb/
+.venv/
+.DS_Store
