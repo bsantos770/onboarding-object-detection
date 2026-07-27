@@ -2,7 +2,7 @@
 
 Onboarding exercise: train an object detection model to identify pumpkins and measure the size of each one from its detected bounding box.
 
-## What was done
+## Overview
 
 1. Trained **YOLO11n** (Ultralytics) on a pumpkin dataset annotated in Roboflow
    (YOLOv12 format, 1 class: `pumpkins`).
@@ -16,7 +16,7 @@ Onboarding exercise: train an object detection model to identify pumpkins and me
 
 The dataset is not included in the repo (see `.gitignore`). Download it from
 [Google Drive](https://drive.google.com/file/d/15LYAlhzyoWVSGfVevL6DFimHxnEQV9Ir/view)
-and unzip it into `dataset/`, so it looks like:
+and unzip it into `dataset/`, resulting in the following path:
 
 ```
 dataset/Pumpkins detection.v2i.yolov12/data.yaml
@@ -32,17 +32,25 @@ Runs 3 experiments (defined in `experiments` inside `train.py`), each with a fre
 YOLO11n model, and logs every run separately to W&B:
 [wandb.ai/bsantos7-eagerworks/pumpkin-detection](https://wandb.ai/bsantos7-eagerworks/pumpkin-detection).
 
-Weights and metrics for each run are saved to `runs/pumpkins/<experiment_name>/`
-(gitignored, regenerated on training).
+Weights and metrics for each run are saved to `runs/pumpkins/<experiment_name>/`.
 
-| Experiment | lr0 | batch | augmentation | mAP50 | mAP50-95 |
-|---|---|---|---|---|---|
-| `lr01_batch16` | 0.01 | 16 | no | 0.9905 | **0.8743** |
-| `lr001_batch16` | 0.001 | 16 | no | 0.9870 | 0.8767 |
-| `lr01_batch16_aug` | 0.01 | 16 | yes (mosaic + rotation) | **0.9907** | 0.8264 |
+A `lr01_batch32` configuration was also tried, but it was dropped from the comparison:
+each epoch took noticeably longer with no clear benefit over `batch=16`, so it wasn't
+worth the extra training time at this stage.
 
-All three are essentially tied on mAP50. **`lr01_batch16`** was picked as the best
-model: its mAP50-95 is nearly identical to `lr001_batch16` (0.002 difference) but with better recall, while the augmentation used in `lr01_batch16_aug` hurts mAP50-95 rather than helping at this low epoch count. This is a judgment call, not a decisive gap — with more training epochs it would be worth re-running the comparison.
+Metrics below are W&B's summary for each run (evaluated on the `best.pt` checkpoint):
+
+| Experiment | lr0 | batch | augmentation | precision | recall | mAP50 | mAP50-95 |
+|---|---|---|---|---|---|---|---|
+| `lr01_batch16` | 0.01 | 16 | no | **0.9473** | 0.9642 | 0.98824 | **0.8775** |
+| `lr001_batch16` | 0.001 | 16 | no | 0.9402 | 0.96381 | 0.98697 | 0.87613 |
+| `lr01_batch16_aug` | 0.01 | 16 | yes (mosaic + rotation) | 0.94983 | **0.96552** | **0.99073** | 0.82636 |
+
+**`lr01_batch16`** was picked as the best model, it has the highest mAP50-95 and the
+highest precision of the three, and its mAP50 is within 0.002 of the top score. The
+augmentation used in `lr01_batch16_aug` gives the best mAP50 and recall, but its
+mAP50-95 drops noticeably (0.826 vs 0.877), at this low epoch count the augmented
+model likely needs more epochs to converge, so it isn't the better pick yet.
 
 ## Inference on a single image
 
@@ -51,7 +59,7 @@ uv run main.py "dataset/Pumpkins detection.v2i.yolov12/valid/images/<name>.jpg"
 ```
 
 Runs the best model (`runs/pumpkins/lr01_batch16/weights/best.pt`) on the given image
-and displays the annotated result (bounding boxes + labels) in a window.
+and displays the annotated result (bounding boxes + labels) in a window using supervision.
 
 ## Size measurement
 

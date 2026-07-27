@@ -12,6 +12,7 @@ results = model.predict(source=VALID_IMAGES_DIR, stream=True)
 
 rows = []
 for result in results:
+    # convert to supervision format
     detections = sv.Detections.from_ultralytics(result)
     image_name = Path(result.path).name
 
