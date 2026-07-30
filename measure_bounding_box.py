@@ -16,9 +16,8 @@ import supervision as sv
 from ultralytics import YOLO
 
 import calibration
+from config import MODEL_PATH, TEST_IMAGES_DIR
 
-MODEL_PATH = "runs/pumpkins/lr01_batch16/weights/best.pt"
-TEST_IMAGES_DIR = "dataset/Pumpkins detection.v2i.yolov12/test/images"
 OUTPUT_CSV = "pumpkin_sizes.csv"
 CONF_THRESHOLD = 0.5
 

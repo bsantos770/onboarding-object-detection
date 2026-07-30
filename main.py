@@ -4,7 +4,7 @@ import cv2
 import supervision as sv
 from ultralytics import YOLO
 
-MODEL_PATH = "runs/pumpkins/lr01_batch16/weights/best.pt"
+from config import MODEL_PATH
 
 
 def main():

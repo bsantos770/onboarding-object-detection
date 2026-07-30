@@ -3,15 +3,12 @@ Evaluates the winning model on test/, which never took part in training or model
 """
 
 import sys
-from pathlib import Path
 
 from ultralytics import YOLO
 
 import wandb
+from config import DATA_YAML, PROJECT_DIR
 
-BASE_DIR = Path(__file__).resolve().parent
-DATA_YAML = BASE_DIR / "dataset" / "Pumpkins detection.v2i.yolov12" / "data.yaml"
-PROJECT_DIR = BASE_DIR / "runs" / "pumpkins"
 WANDB_ENTITY = "bsantos7-eagerworks"
 WANDB_PROJECT = "pumpkin-detection"
 
