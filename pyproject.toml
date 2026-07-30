@@ -5,7 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "rfdetr[loggers,train]>=1.8.3",
     "supervision>=0.29.1",
     "ultralytics>=8.4.104",
     "wandb>=0.28.1",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.0",
 ]
