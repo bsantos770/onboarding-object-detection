@@ -6,6 +6,8 @@ import numpy as np
 import supervision as sv
 from ultralytics import SAM, YOLO
 
+import calibration
+
 DETECTION_MODEL_PATH = "runs/pumpkins/lr01_batch16/weights/best.pt"
 SEGMENTATION_MODEL_PATH = "sam2.1_b.pt"
 TEST_IMAGES_DIR = "dataset/Pumpkins detection.v2i.yolov12/test/images"
@@ -14,6 +16,8 @@ CONF_THRESHOLD = 0.5
 
 
 def main():
+    scale_cm_per_px = calibration.SCALE_CM_PER_PX
+
     detection_model = YOLO(DETECTION_MODEL_PATH)
     segmentation_model = SAM(SEGMENTATION_MODEL_PATH)
 
@@ -45,24 +49,36 @@ def main():
             largest_contour = max(contours, key=cv2.contourArea)
             _, (w, h), _ = cv2.minAreaRect(largest_contour)
 
+            longest_side_px = max(w, h)
             rows.append(
                 {
                     "image": image_name,
                     "area_px": area,
-                    "longest_side_px": round(max(w, h), 1),
+                    "longest_side_px": round(longest_side_px, 1),
+                    "area_cm2": round(area * scale_cm_per_px**2, 1),
+                    "longest_side_cm": round(longest_side_px * scale_cm_per_px, 1),
                 }
             )
 
     with open(OUTPUT_CSV, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["image", "area_px", "longest_side_px"])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "image",
+                "area_px",
+                "longest_side_px",
+                "area_cm2",
+                "longest_side_cm",
+            ],
+        )
         writer.writeheader()
         writer.writerows(rows)
 
-    areas = [row["area_px"] for row in rows]
-    sides = [row["longest_side_px"] for row in rows]
+    areas_cm2 = [row["area_cm2"] for row in rows]
+    sides_cm = [row["longest_side_cm"] for row in rows]
     print(f"Segmented pumpkins: {len(rows)}")
-    print(f"Average area: {sum(areas) / len(areas):.1f} px²")
-    print(f"Average longest side: {sum(sides) / len(sides):.1f} px")
+    print(f"Average area: {sum(areas_cm2) / len(areas_cm2):.1f} cm²")
+    print(f"Average longest side: {sum(sides_cm) / len(sides_cm):.1f} cm")
     print(f"Results saved to {OUTPUT_CSV}")
 
 

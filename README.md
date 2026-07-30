@@ -112,13 +112,9 @@ uv run segment_pumpkins.py
 
 For each image in `test/`, runs the best YOLO model to get bounding boxes, then
 prompts **SAM2** (`sam2.1_b.pt`) with those boxes so it knows where to segment.
-For each resulting mask:
-
-- **Area**: number of pixels in the mask.
-- **Longest side**: fits a rotated bounding rectangle to the mask's contour
-  (`cv2.minAreaRect`) and takes its longer side — this captures the pumpkin's true
-  size regardless of how it's oriented in the photo, unlike a plain axis-aligned
-  bounding box.
+For each resulting mask, computes area and longest side (via `cv2.minAreaRect`, which
+captures the pumpkin's true size regardless of orientation), in pixels and in cm
+(see [calibration.py](calibration.py)).
 
 Results are saved to [`pumpkin_segmentation.csv`](pumpkin_segmentation.csv) (one row
 per segmented pumpkin).
