@@ -110,7 +110,7 @@ pumpkin).
 uv run segment_pumpkins.py
 ```
 
-For each image in `valid/`, runs the best YOLO model to get bounding boxes, then
+For each image in `test/`, runs the best YOLO model to get bounding boxes, then
 prompts **SAM2** (`sam2.1_b.pt`) with those boxes so it knows where to segment.
 For each resulting mask:
 
