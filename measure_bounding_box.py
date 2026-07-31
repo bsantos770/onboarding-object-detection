@@ -33,7 +33,7 @@ def main():
         detections = sv.Detections.from_ultralytics(result)
         image_name = Path(result.path).name
 
-        for x1, y1, x2, y2 in detections.xyxy:
+        for detection_index, (x1, y1, x2, y2) in enumerate(detections.xyxy):
             width = x2 - x1
             height = y2 - y1
             area_bbox = width * height
@@ -44,6 +44,11 @@ def main():
             rows.append(
                 {
                     "image": image_name,
+                    "detection_index": detection_index,
+                    "bbox_x1": round(float(x1), 1),
+                    "bbox_y1": round(float(y1), 1),
+                    "bbox_x2": round(float(x2), 1),
+                    "bbox_y2": round(float(y2), 1),
                     "width_px": round(width, 1),
                     "height_px": round(height, 1),
                     "area_bbox_px": round(area_bbox, 1),
@@ -59,6 +64,11 @@ def main():
             f,
             fieldnames=[
                 "image",
+                "detection_index",
+                "bbox_x1",
+                "bbox_y1",
+                "bbox_x2",
+                "bbox_y2",
                 "width_px",
                 "height_px",
                 "area_bbox_px",
