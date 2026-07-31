@@ -111,10 +111,12 @@ uv run segment_pumpkins.py
 ```
 
 For each image in `test/`, runs the best YOLO model to get bounding boxes, then
-prompts **SAM2** (`sam2.1_b.pt`) with those boxes so it knows where to segment.
-For each resulting mask, computes area and longest side (via `cv2.minAreaRect`, which
-captures the pumpkin's true size regardless of orientation), in pixels and in cm
-(see [calibration.py](calibration.py)).
+prompts **SAM2** (`sam2.1_b.pt`) with those boxes (with `conf=0.0`, so SAM never drops
+a low-quality mask) so it knows where to segment. For each resulting mask, computes
+area and longest side (via `cv2.minAreaRect`, which captures the pumpkin's true size
+regardless of orientation), in pixels and in cm (see [calibration.py](calibration.py)),
+along with `mask_quality`, SAM's own confidence score for that mask, so a bad
+segmentation stays visible and traceable to its box instead of silently disappearing.
 
 Results are saved to [`pumpkin_segmentation.csv`](pumpkin_segmentation.csv) (one row
 per segmented pumpkin).
