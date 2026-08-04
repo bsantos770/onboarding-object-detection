@@ -39,7 +39,7 @@ def main():
         # so a bad mask stays visible in the data (and traceable to its box)
         # instead of silently disappearing.
         sam_result = segmentation_model(
-            image_path, bboxes=detections.xyxy, conf=0.0, verbose=False
+            image_path, bboxes=detections.xyxy.copy(), conf=0.0, verbose=False
         )[0]
         sam_detections = sv.Detections.from_ultralytics(sam_result)
         masks = sam_detections.mask
