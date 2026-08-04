@@ -10,6 +10,8 @@ Onboarding exercise: train an object detection model to identify pumpkins and me
    **Weights & Biases**.
 3. With the best model, ran inference over the whole validation set and measured
    the size (width, height, area) of each detected pumpkin using **supervision**.
+4. Used the detected boxes as prompts for **SAM2** to segment each pumpkin, then
+   measured area and longest side from the resulting masks.
 
 
 ### Dataset
@@ -102,6 +104,23 @@ as an ellipse inscribed in the box corrects for that.
 Results are saved to [`pumpkin_sizes.csv`](pumpkin_sizes.csv) (one row per detected
 pumpkin).
 
+## Segmentation
+
+```bash
+uv run segment_pumpkins.py
+```
+
+For each image in `test/`, runs the best YOLO model to get bounding boxes, then
+prompts **SAM2** (`sam2.1_b.pt`) with those boxes (with `conf=0.0`, so SAM never drops
+a low-quality mask) so it knows where to segment. For each resulting mask, computes
+area and longest side (via `cv2.minAreaRect`, which captures the pumpkin's true size
+regardless of orientation), in pixels and in cm (see [calibration.py](calibration.py)),
+along with `mask_quality`, SAM's own confidence score for that mask, so a bad
+segmentation stays visible and traceable to its box instead of silently disappearing.
+
+Results are saved to [`pumpkin_segmentation.csv`](pumpkin_segmentation.csv) (one row
+per segmented pumpkin).
+
 ## Repo structure
 
 ```
@@ -110,7 +129,9 @@ train.py                  # trains and tracks the experiments in W&B, model sele
 evaluate_final.py         # evaluates the winning experiment on test/ -> final reported metrics
 main.py                   # inference + visualization on a single image
 measure_bounding_box.py   # inference over validation + size measurement -> pumpkin_sizes.csv
+segment_pumpkins.py       # inference + SAM2 segmentation -> pumpkin_segmentation.csv
 pumpkin_sizes.csv         # bounding box measurement results (one row per pumpkin)
+pumpkin_segmentation.csv  # segmentation measurement results (one row per pumpkin)
 dataset/                  # downloaded dataset (gitignored)
 runs/                     # weights and metrics per experiment (gitignored)
 ```
