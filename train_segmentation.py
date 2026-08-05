@@ -2,9 +2,9 @@ from rfdetr import RFDETRSegNano
 
 from config import RFDETR_DATASET_DIR, RFDETR_OUTPUT_DIR
 
-EPOCHS = 1  # minimal test run, not a real training
-BATCH_SIZE = 1  # kept small, batch_size=4 ran MPS out of memory on masks
-GRAD_ACCUM_STEPS = 1  # matches the minimal test, not a real training
+EPOCHS = 10
+BATCH_SIZE = 2
+GRAD_ACCUM_STEPS = 8
 NUM_WORKERS = 2
 WANDB_PROJECT = "pumpkin-segmentation"
 RUN_NAME = "rfdetr_seg_nano"
@@ -22,6 +22,8 @@ def main():
         wandb=True,
         project=WANDB_PROJECT,
         run=RUN_NAME,
+        progress_bar="rich",
+        run_test=True,
     )
 
 

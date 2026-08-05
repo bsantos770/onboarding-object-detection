@@ -10,8 +10,8 @@ Onboarding exercise: train an object detection model to identify pumpkins and me
    **Weights & Biases**.
 3. With the best model, ran inference over the whole validation set and measured
    the size (width, height, area) of each detected pumpkin using **supervision**.
-4. Used the detected boxes as prompts for **SAM2** to segment each pumpkin, then
-   measured area and longest side from the resulting masks.
+4. Segmented each pumpkin two ways: prompting **SAM2** with the detected boxes, and
+   fine-tuning an **RF-DETR-Seg-Nano** model to predict masks directly.
 
 
 ### Dataset
@@ -106,6 +106,11 @@ pumpkin).
 
 ## Segmentation
 
+Two approaches were tried to get a pixel-level mask for each pumpkin, beyond the
+detection model's bounding box.
+
+### SAM2 (prompted by YOLO boxes)
+
 ```bash
 uv run segment_pumpkins.py
 ```
@@ -121,6 +126,25 @@ segmentation stays visible and traceable to its box instead of silently disappea
 Results are saved to [`pumpkin_segmentation.csv`](pumpkin_segmentation.csv) (one row
 per segmented pumpkin).
 
+### RF-DETR-Seg (fine-tuned)
+
+The original dataset only has bounding box annotations, so masks were auto-labeled instead of
+hand-drawn, this runs the trained YOLO detector (`lr01_batch16/weights/best.pt`) over every
+image (`train/`, `valid/`, `test/`) and prompts SAM with each detected box to get a
+mask. The largest contour of each mask is extracted and saved in YOLO-segmentation format to
+`roboflow_export/`, which was zipped and uploaded to Roboflow, reviewed, and exported as
+`pumpkin-segmentation.coco-segmentation`.
+
+```bash
+uv run train_segmentation.py
+```
+
+Fine-tunes `RFDETRSegNano` for 10 epochs. Results obtained on the test set were:
+
+| mAP50 (bbox) | mAP50-95 (bbox) | precision | recall | segm mAP50 | segm mAP50-95 |
+|---|---|---|---|---|---|
+| 0.975 | 0.870 | 0.966 | 0.955 | 0.978 | 0.834 |
+
 ## Repo structure
 
 ```
@@ -130,6 +154,7 @@ evaluate_final.py         # evaluates the winning experiment on test/ -> final r
 main.py                   # inference + visualization on a single image
 measure_bounding_box.py   # inference over validation + size measurement -> pumpkin_sizes.csv
 segment_pumpkins.py       # inference + SAM2 segmentation -> pumpkin_segmentation.csv
+train_segmentation.py     # fine-tunes RF-DETR-Seg-Nano on the segmentation dataset, tracked in W&B
 pumpkin_sizes.csv         # bounding box measurement results (one row per pumpkin)
 pumpkin_segmentation.csv  # segmentation measurement results (one row per pumpkin)
 dataset/                  # downloaded dataset (gitignored)
